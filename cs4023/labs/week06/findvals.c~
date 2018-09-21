@@ -1,0 +1,82 @@
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "utils.h"
+
+int main(int argc, char **argv)
+{
+  char *refStr, *tolStr;
+
+  refStr = tolStr = NULL;
+  int ind;
+  for (ind = 1; ind < argc; ind++)
+  {
+    if (strcmp(argv[ind], "-r") == 0) { refStr = argv[ind+1]; ind++; }
+    if (strcmp(argv[ind], "-t") == 0) { tolStr = argv[ind+1]; ind++; }
+  }
+  if (argc != 5 || refStr == NULL || tolStr == NULL)
+  {
+    fprintf(stderr, "Usage: %s -r ref -t tol\n", argv[0]);
+    exit(1);
+  }
+  struct tm *local;
+  time_t start, end;
+
+  time(&start);  // read and record clock
+  local = localtime(&start);
+  printf("# Start time and date: %s", asctime(local));
+
+  // convert strings to floats
+  float ref = strtof(refStr, 0);
+  float tol = strtof(tolStr, 0);
+  if (tol < 0.0)
+    tol *= -1;			/* always positive */
+
+  int rct, cct;
+  fscanf(stdin, "%d", &rct);
+  fscanf(stdin, "%d", &cct);
+
+  float** rows = (float** ) malloc(rct * sizeof(float *));
+  if (rows == 0)
+  {
+    fprintf(stderr, "Couldn't alocate sufficient space.\n");
+    exit(1);
+  }
+  int i;
+  for (i = 0; i < rct; i++)
+  {
+    float* row = (float* ) malloc(cct * sizeof(float));
+    if (row == 0)
+    {
+      fprintf(stderr, "Couldn't alocate sufficient row space.\n");
+      exit(1);
+    }
+    rows[i] = row;
+  }
+
+  int r, c;
+  for (r = 0; r < rct; r++)
+    for (c = 0; c < cct; c++)
+      fscanf(stdin, "%f", &rows[r][c]);
+
+  // data read; now check it
+  int count = 0;
+  for (r = 0; r < rct; r++)
+    for (c = 0; c < cct; c++)
+      if (approxEqual(rows[r][c], ref, tol) == 1)
+      {
+	fprintf(stdout, "r=%d, c=%d: %.6f\n", r, c, rows[r][c]);
+	count++;
+      }
+
+  // now output count
+  fprintf(stdout, "Found %d approximate matches.\n", count);
+
+  time(&end);
+  local = localtime(&end);
+  printf("# End time and date: %s", asctime(local));
+
+  exit(0);
+}

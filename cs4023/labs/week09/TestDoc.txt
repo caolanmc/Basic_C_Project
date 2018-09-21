@@ -1,0 +1,9 @@
+#pragma omp parallel for
+  for (r = 0; r < numRows; r++)
+    for (c = 0; c < numCols; c++)
+      if (approxEqual(rows[r][c], ref, tol) == 1)
+      {
+	if(verbose)
+	  fprintf(stdout, "r=%d, cc=%d: %.6f (thread= %d)\n", r, c, rows[r][c], omp_get_thread_num());
+	count++;
+      }

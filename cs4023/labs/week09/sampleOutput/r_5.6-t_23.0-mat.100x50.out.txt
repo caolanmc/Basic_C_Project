@@ -1,0 +1,3 @@
+# Start time and date: Mon Nov  6 10:40:31 2017
+Found 473 approximate matches.
+Elapsed time: 0.002886(s)
